@@ -1,7 +1,7 @@
  
 #!/bin/bash
 
-# Script to list built-in Azure roles with dangerous permissions
+# Script to list custom & built-in Azure roles with dangerous permissions
 
 echo "=== Built-in Azure Roles with Dangerous Permissions ==="
 echo ""
