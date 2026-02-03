@@ -12,7 +12,7 @@ Files will be outputted showing custom and builtin role permissions and assignme
 
 These permissions are the ones identified and can be used for privilege escalation ;)
 
-=======================================================================================================
+====================================================================================
 
 #### The ConReg script will verify what permissions are valid and will output the permission and scope to a file. These involve:
 
